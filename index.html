@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Token Info Widget</title>
+    <title>Token Widget</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #000;
-            color: #fff;
             margin: 0;
             padding: 0;
+            font-family: 'Orbitron', sans-serif;
+            background-color: #000;
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -20,21 +21,41 @@
             background-color: #1a1a1a;
             padding: 20px;
             border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
-            text-align: center;
             width: 320px;
+            text-align: center;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
         }
         .widget img {
             width: 100px;
             height: 100px;
             margin-bottom: 20px;
         }
-        .info {
-            margin-bottom: 15px;
-            font-size: 18px;
+        .tab {
+            display: flex;
+            justify-content: space-around;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .tab button {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .tab button.active {
+            background-color: #555;
+        }
+        .tabcontent {
+            padding: 20px;
+            display: none;
+        }
+        .tabcontent.active {
+            display: block;
         }
         .loading {
-            font-size: 16px;
             color: #aaa;
         }
     </style>
@@ -42,46 +63,73 @@
 <body>
 
 <div class="widget">
-    <img src="https://raw.githubusercontent.com/Atlas80/Widget-Smetx/main/Nickel_99.99.png" alt="Token Logo">
-    <div id="maxSupply" class="info">Max Total Supply: <span class="loading">Loading...</span></div>
-    <div id="holders" class="info">Holders: <span class="loading">Loading...</span></div>
-    <div id="transfers" class="info">Total Transfers: <span class="loading">Loading...</span></div>
-    <div id="price" class="info">Price: <span class="loading">Loading...</span></div>
+    <img src="./Nickel_99.99.png" alt="Token Logo">
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'Overview')" id="defaultTab">Overview</button>
+        <button class="tablinks" onclick="openTab(event, 'Market')">Market</button>
+    </div>
+
+    <!-- Overview Tab Content -->
+    <div id="Overview" class="tabcontent">
+        <p>Max Total Supply: <span id="maxSupply" class="loading">Loading...</span></p>
+        <p>Total Transfers: <span id="transfers" class="loading">Loading...</span></p>
+    </div>
+
+    <!-- Market Tab Content -->
+    <div id="Market" class="tabcontent">
+        <p>Price: <span id="price" class="loading">Loading...</span></p>
+    </div>
 </div>
 
 <script>
     const apiKey = 'X9PKAZUFPNAUH9PVU6T25M68N4Q6VTKKNS';
     const contractAddress = '0x0bCC26e40d87873615e082c1b5df15E487f94737';
 
-    async function fetchData() {
+    // Open tab function
+    function openTab(evt, tabName) {
+        let i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+    document.getElementById("defaultTab").click();
+
+    // Fetch Overview Data
+    async function fetchOverview() {
         try {
-            // Fetch Max Total Supply
             const maxSupplyResponse = await fetch(`https://api.etherscan.io/api?module=stats&action=tokensupply&contractaddress=${contractAddress}&apikey=${apiKey}`);
             const maxSupplyData = await maxSupplyResponse.json();
-            document.getElementById('maxSupply').innerHTML = `Max Total Supply: ${parseInt(maxSupplyData.result).toLocaleString()}`;
+            document.getElementById('maxSupply').innerText = `${parseInt(maxSupplyData.result)}`;
 
-            // Fetch Holders
-            const holdersResponse = await fetch(`https://api.etherscan.io/api?module=token&action=tokenholderlist&contractaddress=${contractAddress}&apikey=${apiKey}`);
-            const holdersData = await holdersResponse.json();
-            document.getElementById('holders').innerHTML = `Holders: ${holdersData.result.length}`;
-
-            // Fetch Total Transfers
             const transfersResponse = await fetch(`https://api.etherscan.io/api?module=account&action=tokentx&contractaddress=${contractAddress}&apikey=${apiKey}`);
             const transfersData = await transfersResponse.json();
-            document.getElementById('transfers').innerHTML = `Total Transfers: ${transfersData.result.length}`;
-
-            // Fetch Price (placeholder API call, replace with valid price API)
-            const priceResponse = await fetch(`https://api.etherscan.io/api?module=stats&action=tokenprice&contractaddress=${contractAddress}&apikey=${apiKey}`);
-            const priceData = await priceResponse.json();
-            document.getElementById('price').innerHTML = `Price: $${priceData.result}`;
-
+            document.getElementById('transfers').innerText = transfersData.result.length;
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching overview data:', error);
         }
     }
 
-    // Call the fetchData function
-    fetchData();
+    // Fetch Market Data
+    async function fetchMarket() {
+        try {
+            const priceResponse = await fetch(`https://api.etherscan.io/api?module=stats&action=tokenprice&contractaddress=${contractAddress}&apikey=${apiKey}`);
+            const priceData = await priceResponse.json();
+            document.getElementById('price').innerText = `$${priceData.result}`;
+        } catch (error) {
+            console.error('Error fetching market data:', error);
+        }
+    }
+
+    fetchOverview();
+    fetchMarket();
 </script>
 
 </body>
