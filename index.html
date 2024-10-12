@@ -72,6 +72,7 @@
     <div id="Overview" class="tabcontent">
         <p>Max Total Supply: <span id="maxSupply" class="loading">Loading...</span></p>
         <p>Total Transfers: <span id="transfers" class="loading">Loading...</span></p>
+        <p>Price: <span id="price" class="loading">Loading...</span></p>
     </div>
 </div>
 
@@ -99,14 +100,25 @@
     // Fetch Overview Data from Etherscan
     async function fetchOverview() {
         try {
+            // Max Total Supply (converted from Wei)
             const maxSupplyResponse = await fetch(`https://api.etherscan.io/api?module=stats&action=tokensupply&contractaddress=${contractAddress}&apikey=${apiKey}`);
             const maxSupplyData = await maxSupplyResponse.json();
-            const maxSupply = parseInt(maxSupplyData.result) / (10 ** 18);  // Convert from Wei
+            const maxSupply = parseInt(maxSupplyData.result) / (10 ** 18); 
             document.getElementById('maxSupply').innerText = `${maxSupply}`;
 
+            // Total Transfers
             const transfersResponse = await fetch(`https://api.etherscan.io/api?module=account&action=tokentx&contractaddress=${contractAddress}&apikey=${apiKey}`);
             const transfersData = await transfersResponse.json();
             document.getElementById('transfers').innerText = transfersData.result.length;
+
+            // Token Price (using a custom method)
+            const priceResponse = await fetch(`https://api.etherscan.io/api?module=stats&action=tokenprice&contractaddress=${contractAddress}&apikey=${apiKey}`);
+            const priceData = await priceResponse.json();
+            if (priceData.status === "1") {
+                document.getElementById('price').innerText = `$${priceData.result}`;
+            } else {
+                document.getElementById('price').innerText = 'Unavailable';
+            }
         } catch (error) {
             console.error('Error fetching overview data:', error);
         }
