@@ -66,18 +66,12 @@
     <img src="./Nickel_99.99.png" alt="Token Logo">
     <div class="tab">
         <button class="tablinks" onclick="openTab(event, 'Overview')" id="defaultTab">Overview</button>
-        <button class="tablinks" onclick="openTab(event, 'Market')">Market</button>
     </div>
 
     <!-- Overview Tab Content -->
     <div id="Overview" class="tabcontent">
         <p>Max Total Supply: <span id="maxSupply" class="loading">Loading...</span></p>
         <p>Total Transfers: <span id="transfers" class="loading">Loading...</span></p>
-    </div>
-
-    <!-- Market Tab Content -->
-    <div id="Market" class="tabcontent">
-        <p>Price: <span id="price" class="loading">Loading...</span></p>
     </div>
 </div>
 
@@ -102,7 +96,7 @@
 
     document.getElementById("defaultTab").click();
 
-    // Fetch Overview Data
+    // Fetch Overview Data from Etherscan
     async function fetchOverview() {
         try {
             const maxSupplyResponse = await fetch(`https://api.etherscan.io/api?module=stats&action=tokensupply&contractaddress=${contractAddress}&apikey=${apiKey}`);
@@ -118,21 +112,8 @@
         }
     }
 
-    // Fetch Market Data from CoinGecko
-    async function fetchMarket() {
-        try {
-            const priceResponse = await fetch('https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=0x0bCC26e40d87873615e082c1b5df15E487f94737&vs_currencies=usd');
-            const priceData = await priceResponse.json();
-            document.getElementById('price').innerText = `$${priceData['0x0bCC26e40d87873615e082c1b5df15E487f94737'].usd}`;
-        } catch (error) {
-            console.error('Error fetching market data:', error);
-            document.getElementById('price').innerText = 'Error fetching price';
-        }
-    }
-
     // Fetch data on load
     fetchOverview();
-    fetchMarket();
 </script>
 
 </body>
