@@ -1,120 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Token Widget</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Orbitron', sans-serif;
             background-color: #000;
-            color: #c9ad43; /* Testo colore dorato */
+            font-family: 'Orbitron', sans-serif;
+            color: #c9ad43;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
         }
-        .widget {
-            background-color: #1a1a1a;
+
+        .widget-container {
+            width: 300px;
             padding: 20px;
-            border-radius: 15px;
-            width: 320px;
-            text-align: center;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
-        }
-        .widget img {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 20px;
-        }
-        .tab {
-            display: flex;
-            justify-content: space-around;
-            background-color: #333;
-            padding: 10px;
+            background-color: #000;
+            border: 2px solid #c9ad43;
             border-radius: 10px;
+            text-align: center;
+            position: relative;
         }
-        .tab button {
-            background-color: #333;
-            color: #c9ad43;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
+
+        .widget-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.1;
+            background-image: url('/mnt/data/Nickel_99.99.png');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-top: 20px;
+            border-bottom: 1px solid #c9ad43;
+            padding-bottom: 5px;
+        }
+
+        .data-item {
             font-size: 16px;
+            margin: 10px 0;
         }
-        .tab button.active {
-            background-color: #555;
-        }
-        .tabcontent {
-            padding: 20px;
-            display: none;
-        }
-        .tabcontent.active {
-            display: block;
-        }
+
         .loading {
-            color: #aaa;
+            color: #c9ad43;
         }
+
     </style>
 </head>
 <body>
+    <div class="widget-container">
+        <h1>Token Info</h1>
 
-<div class="widget">
-    <img src="./Nickel_99.99.png" alt="Token Logo">
-    <div class="tab">
-        <button class="tablinks" onclick="openTab(event, 'Overview')" id="defaultTab">Overview</button>
+        <div id="overview-section">
+            <h2 class="section-title">Overview</h2>
+            <div class="data-item" id="token-price">Price: <span class="loading">Loading...</span></div>
+        </div>
+
+        <div id="market-section">
+            <h2 class="section-title">Market</h2>
+            <div class="data-item" id="market-cap">Market Cap: <span class="loading">Loading...</span></div>
+        </div>
     </div>
 
-    <!-- Overview Tab Content -->
-    <div id="Overview" class="tabcontent">
-        <p>Max Total Supply: <span id="maxSupply" class="loading">Loading...</span></p>
-        <p>Total Transfers: <span id="transfers" class="loading">Loading...</span></p>
-    </div>
-</div>
+    <script>
+        const apiKey = 'X9PKAZUFPNAUH9PVU6T25M68N4Q6VTKKNS';
+        const tokenAddress = '0x0bCC26e40d87873615e082c1b5df15E487f94737';
 
-<script>
-    const apiKey = 'X9PKAZUFPNAUH9PVU6T25M68N4Q6VTKKNS';
-    const contractAddress = '0x0bCC26e40d87873615e082c1b5df15E487f94737';
+        async function fetchTokenData() {
+            try {
+                // Fetch token price
+                let priceResponse = await fetch(`https://api.etherscan.io/api?module=stats&action=tokensupply&contractaddress=${tokenAddress}&apikey=${apiKey}`);
+                let priceData = await priceResponse.json();
+                let price = priceData.result / Math.pow(10, 18); // Assuming 18 decimals
+                document.getElementById('token-price').innerHTML = `Price: $${price.toFixed(2)}`;
 
-    // Open tab function
-    function openTab(evt, tabName) {
-        let i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tabcontent");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
+                // Fetch market cap
+                let marketCapResponse = await fetch(`https://api.etherscan.io/api?module=stats&action=tokenmarketcap&contractaddress=${tokenAddress}&apikey=${apiKey}`);
+                let marketCapData = await marketCapResponse.json();
+                let marketCap = marketCapData.result;
+                document.getElementById('market-cap').innerHTML = `Market Cap: $${marketCap}`;
+            } catch (error) {
+                console.error('Error fetching token data:', error);
+            }
         }
-        tablinks = document.getElementsByClassName("tablinks");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
-        }
-        document.getElementById(tabName).style.display = "block";
-        evt.currentTarget.className += " active";
-    }
 
-    document.getElementById("defaultTab").click();
-
-    // Fetch Overview Data from Etherscan
-    async function fetchOverview() {
-        try {
-            const maxSupplyResponse = await fetch(`https://api.etherscan.io/api?module=stats&action=tokensupply&contractaddress=${contractAddress}&apikey=${apiKey}`);
-            const maxSupplyData = await maxSupplyResponse.json();
-            const maxSupply = parseInt(maxSupplyData.result) / (10 ** 18);  // Convert from Wei
-            document.getElementById('maxSupply').innerText = `${maxSupply}`;
-
-            const transfersResponse = await fetch(`https://api.etherscan.io/api?module=account&action=tokentx&contractaddress=${contractAddress}&apikey=${apiKey}`);
-            const transfersData = await transfersResponse.json();
-            document.getElementById('transfers').innerText = transfersData.result.length;
-        } catch (error) {
-            console.error('Error fetching overview data:', error);
-        }
-    }
-
-    // Fetch data on load
-    fetchOverview();
-</script>
-
+        fetchTokenData();
+    </script>
 </body>
 </html>
