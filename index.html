@@ -3,63 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Token Info Widget</title>
+    <title>Token Widget</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
         body {
-            font-family: Arial, sans-serif;
+            background-color: #000;
+            font-family: 'Orbitron', sans-serif;
+            color: #c9ad43;
+            margin: 0;
+            padding: 0;
+        }
+
+        .widget-container {
+            width: 300px;
+            border: 2px solid #c9ad43;
             padding: 20px;
-            background-color: #f7f7f7;
-        }
-        .widget {
-            background-color: #ffffff;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
             text-align: center;
-            max-width: 300px;
-            margin: 0 auto;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            background-image: url('/mnt/data/Nickel_99.99.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
-        .widget h3 {
-            margin-bottom: 20px;
-        }
-        .widget p {
-            font-size: 18px;
+
+        h1 {
+            font-size: 24px;
             margin: 10px 0;
         }
-        .loading {
+
+        .section-title {
+            font-size: 20px;
+            margin-top: 20px;
+            border-bottom: 1px solid #c9ad43;
+            padding-bottom: 5px;
+        }
+
+        .data-item {
             font-size: 16px;
-            color: #999;
+            margin: 10px 0;
+        }
+
+        .loading {
+            color: #c9ad43;
         }
     </style>
 </head>
 <body>
+    <div class="widget-container">
+        <h1>Token Info</h1>
 
-<div class="widget">
-    <h3>Token Balance</h3>
-    <p id="balance" class="loading">Loading...</p>
-</div>
+        <div id="overview-section">
+            <h2 class="section-title">Overview</h2>
+            <div class="data-item" id="token-price">Price: <span class="loading">Loading...</span></div>
+        </div>
 
-<script>
-    const apiKey = 'X9PKAZUFPNAUH9PVU6T25M68N4Q6VTKKNS';
-    const contractAddress = '0x0bCC26e40d87873615e082c1b5df15E487f94737'; // Token Contract Address
-    const address = 'User_Wallet_Address'; // Replace with a real wallet address to check balance
+        <div id="market-section">
+            <h2 class="section-title">Market</h2>
+            <div class="data-item" id="market-cap">Onchain Market Cap: <span class="loading">Loading...</span></div>
+        </div>
+    </div>
 
-    async function getTokenBalance() {
-        const url = `https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=${contractAddress}&address=${address}&tag=latest&apikey=${apiKey}`;
+    <script>
+        const apiKey = 'X9PKAZUFPNAUH9PVU6T25M68N4Q6VTKKNS';
+        const tokenAddress = '0x0bCC26e40d87873615e082c1b5df15E487f94737';
 
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            const balance = parseInt(data.result) / (10 ** 18); // Assuming the token has 18 decimals
-            document.getElementById('balance').innerText = `${balance.toFixed(2)} Tokens`;
-        } catch (error) {
-            document.getElementById('balance').innerText = 'Error fetching balance';
+        async function fetchTokenData() {
+            try {
+                // Fetch token price
+                let priceResponse = await fetch(`https://api.etherscan.io/api?module=stats&action=tokensupply&contractaddress=${tokenAddress}&apikey=${apiKey}`);
+                let priceData = await priceResponse.json();
+                let price = priceData.result / Math.pow(10, 18); // Assuming 18 decimals
+                document.getElementById('token-price').innerHTML = `Price: $${price.toFixed(2)}`;
+
+                // Fetch market cap
+                let marketCapResponse = await fetch(`https://api.etherscan.io/api?module=stats&action=tokenmarketcap&contractaddress=${tokenAddress}&apikey=${apiKey}`);
+                let marketCapData = await marketCapResponse.json();
+                let marketCap = marketCapData.result;
+                document.getElementById('market-cap').innerHTML = `Onchain Market Cap: $${marketCap}`;
+            } catch (error) {
+                console.error('Error fetching token data:', error);
+            }
         }
-    }
 
-    getTokenBalance();
-</script>
-
+        fetchTokenData();
+    </script>
 </body>
 </html>
