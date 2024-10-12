@@ -109,6 +109,10 @@
             const maxSupplyData = await maxSupplyResponse.json();
             document.getElementById('maxSupply').innerText = `${parseInt(maxSupplyData.result)}`;
 
+        // Convert the supply from Wei to the actual token amount (divide by 10^18)
+        const maxSupply = parseInt(maxSupplyData.result) / (10 ** 18);
+        document.getElementById('maxSupply').innerText = `${maxSupply}`;
+
             const transfersResponse = await fetch(`https://api.etherscan.io/api?module=account&action=tokentx&contractaddress=${contractAddress}&apikey=${apiKey}`);
             const transfersData = await transfersResponse.json();
             document.getElementById('transfers').innerText = transfersData.result.length;
