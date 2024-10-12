@@ -7,58 +7,81 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f7f7f7;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         .widget {
-            background-color: #ffffff;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
+            background-color: #1a1a1a;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
             text-align: center;
-            max-width: 300px;
-            margin: 0 auto;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            width: 320px;
         }
-        .widget h3 {
+        .widget img {
+            width: 100px;
+            height: 100px;
             margin-bottom: 20px;
         }
-        .widget p {
+        .info {
+            margin-bottom: 15px;
             font-size: 18px;
-            margin: 10px 0;
         }
         .loading {
             font-size: 16px;
-            color: #999;
+            color: #aaa;
         }
     </style>
 </head>
 <body>
 
 <div class="widget">
-    <h3>Token Balance</h3>
-    <p id="balance" class="loading">Loading...</p>
+    <img src="https://raw.githubusercontent.com/yourusername/yourrepository/main/Nickel_99.99.png" alt="Token Logo">
+    <div id="maxSupply" class="info">Max Total Supply: <span class="loading">Loading...</span></div>
+    <div id="holders" class="info">Holders: <span class="loading">Loading...</span></div>
+    <div id="transfers" class="info">Total Transfers: <span class="loading">Loading...</span></div>
+    <div id="price" class="info">Price: <span class="loading">Loading...</span></div>
 </div>
 
 <script>
     const apiKey = 'X9PKAZUFPNAUH9PVU6T25M68N4Q6VTKKNS';
-    const contractAddress = '0x0bCC26e40d87873615e082c1b5df15E487f94737'; // Token Contract Address
-    const address = 'User_Wallet_Address'; // Replace with a real wallet address to check balance
+    const contractAddress = '0x0bCC26e40d87873615e082c1b5df15E487f94737';
 
-    async function getTokenBalance() {
-        const url = `https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=${contractAddress}&address=${address}&tag=latest&apikey=${apiKey}`;
-
+    async function fetchData() {
         try {
-            const response = await fetch(url);
-            const data = await response.json();
-            const balance = parseInt(data.result) / (10 ** 18); // Assuming the token has 18 decimals
-            document.getElementById('balance').innerText = `${balance.toFixed(2)} Tokens`;
+            // Fetch Max Total Supply
+            const maxSupplyResponse = await fetch(`https://api.etherscan.io/api?module=stats&action=tokensupply&contractaddress=${contractAddress}&apikey=${apiKey}`);
+            const maxSupplyData = await maxSupplyResponse.json();
+            document.getElementById('maxSupply').innerHTML = `Max Total Supply: ${parseInt(maxSupplyData.result).toLocaleString()}`;
+
+            // Fetch Holders
+            const holdersResponse = await fetch(`https://api.etherscan.io/api?module=token&action=tokenholderlist&contractaddress=${contractAddress}&apikey=${apiKey}`);
+            const holdersData = await holdersResponse.json();
+            document.getElementById('holders').innerHTML = `Holders: ${holdersData.result.length}`;
+
+            // Fetch Total Transfers
+            const transfersResponse = await fetch(`https://api.etherscan.io/api?module=account&action=tokentx&contractaddress=${contractAddress}&apikey=${apiKey}`);
+            const transfersData = await transfersResponse.json();
+            document.getElementById('transfers').innerHTML = `Total Transfers: ${transfersData.result.length}`;
+
+            // Fetch Price (placeholder API call, replace with valid price API)
+            const priceResponse = await fetch(`https://api.etherscan.io/api?module=stats&action=tokenprice&contractaddress=${contractAddress}&apikey=${apiKey}`);
+            const priceData = await priceResponse.json();
+            document.getElementById('price').innerHTML = `Price: $${priceData.result}`;
+
         } catch (error) {
-            document.getElementById('balance').innerText = 'Error fetching balance';
+            console.error('Error fetching data:', error);
         }
     }
 
-    getTokenBalance();
+    // Call the fetchData function
+    fetchData();
 </script>
 
 </body>
