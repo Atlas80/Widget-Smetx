@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Info Widget</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f7f7f7;
+        }
+        .widget {
+            background-color: #ffffff;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 300px;
+            margin: 0 auto;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .widget h3 {
+            margin-bottom: 20px;
+        }
+        .widget p {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        .loading {
+            font-size: 16px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+
+<div class="widget">
+    <h3>Token Balance</h3>
+    <p id="balance" class="loading">Loading...</p>
+</div>
+
+<script>
+    const apiKey = 'X9PKAZUFPNAUH9PVU6T25M68N4Q6VTKKNS';
+    const contractAddress = '0x0bCC26e40d87873615e082c1b5df15E487f94737'; // Token Contract Address
+    const address = 'User_Wallet_Address'; // Replace with a real wallet address to check balance
+
+    async function getTokenBalance() {
+        const url = `https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=${contractAddress}&address=${address}&tag=latest&apikey=${apiKey}`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            const balance = parseInt(data.result) / (10 ** 18); // Assuming the token has 18 decimals
+            document.getElementById('balance').innerText = `${balance.toFixed(2)} Tokens`;
+        } catch (error) {
+            document.getElementById('balance').innerText = 'Error fetching balance';
+        }
+    }
+
+    getTokenBalance();
+</script>
+
+</body>
+</html>
