@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Widget</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Orbitron', sans-serif;
+            background-color: #000;
+            color: #c9ad43; /* Testo colore dorato */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .widget {
+            background-color: #1a1a1a;
+            padding: 20px;
+            border-radius: 15px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        .widget img {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+        .section {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .section h2 {
+            font-size: 18px;
+            color: #c9ad43;
+            margin: 0;
+            padding-bottom: 10px;
+        }
+        .section p {
+            color: #fff;
+            font-size: 16px;
+        }
+        .loading {
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+<div class="widget">
+    <img src="./nickel.png" alt="Token Logo">
+    
+    <!-- Overview Section -->
+    <div class="section">
+        <h2>Overview</h2>
+        <p>Max Total Supply: <span id="maxSupply" class="loading">Loading...</span></p>
+        <p>Total Transfers: <span id="transfers" class="loading">Loading...</span></p>
+    </div>
+
+    <!-- Market Section -->
+    <div class="section">
+        <h2>Market</h2>
+        <p>Price: <span id="price" class="loading">Loading...</span></p>
+    </div>
+</div>
+
+<script>
+    const apiKey = 'X9PKAZUFPNAUH9PVU6T25M68N4Q6VTKKNS';
+    const contractAddress = '0x0bCC26e40d87873615e082c1b5df15E487f94737';
+
+    // Fetch Overview Data from Etherscan
+    async function fetchOverview() {
+        try {
+            // Max Total Supply (converted from Wei)
+            const maxSupplyResponse = await fetch(`https://api.etherscan.io/api?module=stats&action=tokensupply&contractaddress=${contractAddress}&apikey=${apiKey}`);
+            const maxSupplyData = await maxSupplyResponse.json();
+            const maxSupply = parseInt(maxSupplyData.result) / (10 ** 18); 
+            document.getElementById('maxSupply').innerText = `${maxSupply}`;
+
+            // Total Transfers
+            const transfersResponse = await fetch(`https://api.etherscan.io/api?module=account&action=tokentx&contractaddress=${contractAddress}&apikey=${apiKey}`);
+            const transfersData = await transfersResponse.json();
+            document.getElementById('transfers').innerText = transfersData.result.length;
+
+            // Fetch Token Price from CoinGecko
+            const priceResponse = await fetch(`https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${contractAddress}&vs_currencies=usd`);
+            const priceData = await priceResponse.json();
+            const price = priceData[contractAddress.toLowerCase()].usd;
+            document.getElementById('price').innerText = `$${price}`;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            document.getElementById('price').innerText = 'Unavailable';
+        }
+    }
+
+    // Fetch data on load
+    fetchOverview();
+</script>
+
+</body>
+</html>
